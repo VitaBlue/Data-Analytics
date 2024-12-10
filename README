@@ -1,1 +1,8 @@
-#This python code allows you to clean data in a ceratin number of ways.
+These python codes allows you to clean data in different ways.
+
+Overall Procedure:
+When you run the code, you will be prompted to provide the name of your Excel file.
+In most cases, you will need to specify the columns and/or rows that you wish to clean.
+Next, you will be asked to enter the directory where the cleaned file will be saved.
+Finally, you will input the name for the cleaned file.
+The output will be an Excel file containing the cleaned data.
