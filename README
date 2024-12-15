@@ -1,5 +1,5 @@
 These python codes allows you to clean data in different ways.
-Openpyxl and OpenCC are needed to be install.
+Openpyxl and OpenCC are needed to be installed.
 
 Overall Procedure:
 When you run the code, you will be prompted to provide the name of your Excel file.
