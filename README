@@ -1,4 +1,5 @@
 These python codes allows you to clean data in different ways.
+Openpyxl and OpenCC are needed to be install.
 
 Overall Procedure:
 When you run the code, you will be prompted to provide the name of your Excel file.
@@ -6,3 +7,17 @@ In most cases, you will need to specify the columns and/or rows that you wish to
 Next, you will be asked to enter the directory where the cleaned file will be saved.
 Finally, you will input the name for the cleaned file.
 The output will be an Excel file containing the cleaned data.
+
+ChineseCleaning.py will translate Simplifed Chinese text into Tranditional Chinese text in the excel file.
+1. Enter the name of the target excel file.
+2. Enter the column and/or rows that you wish to translate.
+3. Enter the directory of the file you wish to save at.
+4. Enter the name of new excel file.
+
+RemvoeSpace.py will remove spaces between text in the excel file.
+1. Enter the name of the target excel file.
+2. Enter the column and/or rows that you wish to remove the spaces.
+3. Enter the directory of the file you wish to save at.
+4. Enter the name of new excel file.
+*PLEASE CHANGE THE PATHS IN CHANGE_WORKING_DIRECTORY() BEFORE RUNNING THEM*
+
