@@ -2,19 +2,16 @@ import os
 import openpyxl
 import re
 
-def change_working_directory():
-    """Change the current working directory."""
-    os.chdir(r'C:\Users\user\OneDrive\文件\Python')
-
-def get_input_file():
+def get_input_file(default_directory):
     """Prompt user to input the name of the Excel file."""
     while True:
         input_file = input("Enter the name of the input Excel file (with .xlsx extension): ")
+        full_path = os.path.join(default_directory, input_file)  # Combine with default directory
         try:
-            wb = openpyxl.load_workbook(input_file)  # Attempt to load the workbook
-            return input_file
+            wb = openpyxl.load_workbook(full_path)  # Attempt to load the workbook
+            return full_path  # Return full path
         except FileNotFoundError:
-            print(f"File '{input_file}' not found. Please try again.")
+            print(f"File '{full_path}' not found. Please try again.")
 
 def get_columns_to_clean():
     """Prompt user to input the column indices to clean."""
@@ -75,14 +72,12 @@ def clean_dates(input_file, column_indices, output_file):
     print(f"All dates have been cleaned and saved to {output_file}")
 
 # Main execution flow
-change_working_directory()  # Change working directory at start
-
-# Get user input for file name and columns to clean
-input_excel_file = get_input_file()
-columns_to_clean = get_columns_to_clean()
-
 # Get default directory where the script is running
 default_directory = os.getcwd()
+
+# Get user input for file name and columns to clean
+input_excel_file = get_input_file(default_directory)  # Pass default directory here
+columns_to_clean = get_columns_to_clean()
 
 # Get output file details from user
 output_excel_file = get_output_file_details(default_directory)
