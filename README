@@ -8,15 +8,29 @@ Next, you will be asked to enter the directory where the cleaned file will be sa
 Finally, you will input the name for the cleaned file.
 The output will be an Excel file containing the cleaned data.
 
+*MAKE SURE THE TERMINAL IS AT THE CORRECT DIRECTORY BEFORE YOU ENTER THE NAME OF THE TARGET EXCEL FILE*
+
 ChineseCleaning.py will translate Simplifed Chinese text into Tranditional Chinese text in the excel file.
 1. Enter the name of the target excel file.
 2. Enter the column and/or rows that you wish to translate.
 3. Enter the directory of the file you wish to save at.
-4. Enter the name of new excel file.
+4. Enter the name of the new excel file.
 
 RemvoeSpace.py will remove spaces between text in the excel file.
 1. Enter the name of the target excel file.
 2. Enter the column and/or rows that you wish to remove the spaces.
 3. Enter the directory of the file you wish to save at.
-4. Enter the name of new excel file.
+4. Enter the name of the new excel file.
 *PLEASE CHANGE THE PATHS IN CHANGE_WORKING_DIRECTORY() BEFORE RUNNING THEM*
+
+RemoveText.py will remove all non-numeric characters in the excel file and convert the remaining numbers to integer format.
+1. Enter the name of the target excel file.
+2. Enter the column indices where you wish to remove non-numeric characters (e.g., 1,2 for columns A and B).
+3. Enter the directory of the file you wish to save at (or enter '0' to use current directory).
+4. Enter the name of the new excel file.
+
+DateCleaning.py will standardize date formats in the excel file to 'YYYY年X月X日' format.
+1. Enter the name of the target excel file.
+2. Enter the column indices where you wish to standardize dates (e.g., 1,2 for columns A and B).
+3. Enter the directory of the file you wish to save at (or enter '0' to use current directory).
+4. Enter the name of the new excel file.
