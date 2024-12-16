@@ -6,10 +6,10 @@ def get_input_file(default_directory):
     """Prompt user to input the name of the Excel file."""
     while True:
         input_file = input("Enter the name of the input Excel file (with .xlsx extension): ")
-        full_path = os.path.join(default_directory, input_file)
+        full_path = os.path.join(default_directory, input_file)  # Combine with default directory
         try:
-            wb = openpyxl.load_workbook(full_path)
-            return full_path
+            wb = openpyxl.load_workbook(full_path)  # Attempt to load the workbook
+            return full_path  # Return full path
         except FileNotFoundError:
             print(f"File '{full_path}' not found. Please try again.")
 
@@ -18,11 +18,11 @@ def get_columns_to_clean():
     while True:
         try:
             columns_input = input("Enter the column indices to clean (comma-separated, e.g., 1,2 for columns A and B): ")
-            columns = [int(col.strip()) for col in columns_input.split(',')]
+            columns = [int(col.strip()) for col in columns_input.split(',')]  # Return as is (1-based index)
             if any(col < 1 for col in columns):
                 print("Column index must be at least 1.")
                 continue
-            return columns
+            return columns  # Return list of column indices
         except ValueError:
             print("Invalid input. Please enter valid integers.")
 
@@ -79,9 +79,9 @@ def clean_dates(input_file, column_indices, output_file):
     total_processed = 0
 
     for col in column_indices:
-        for row in range(1, ws.max_row + 1):
+        for row in range(1, ws.max_row + 1):  # Start from row 1 (including header)
             cell = ws.cell(row=row, column=col)
-            if isinstance(cell.value, str):
+            if isinstance(cell.value, str):  # Check if the cell contains text
                 total_processed += 1
                 formatted_date = format_date(cell.value.strip())
                 if formatted_date:
@@ -99,7 +99,7 @@ def clean_dates(input_file, column_indices, output_file):
 # Main execution flow
 default_directory = os.getcwd()
 
-input_excel_file = get_input_file(default_directory)
+input_excel_file = get_input_file(default_directory)  # Pass default directory here
 columns_to_clean = get_columns_to_clean()
 output_excel_file = get_output_file_details(default_directory)
 
