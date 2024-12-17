@@ -23,7 +23,7 @@ RemvoeSpace.py will remove spaces between text in the excel file.
 4. Enter the name of the new excel file.
 *PLEASE CHANGE THE PATHS IN CHANGE_WORKING_DIRECTORY() BEFORE RUNNING THEM*
 
-RemoveText.py will remove all non-numeric characters in the excel file and convert the remaining numbers to integer format.
+RemoveText.py will remove all non-numeric characters in the selected column(s) in the excel file and convert the remaining numbers to integer format.
 1. Enter the name of the target excel file.
 2. Enter the column indices where you wish to remove non-numeric characters (e.g., 1,2 for columns A and B).
 3. Enter the directory of the file you wish to save at (or enter '0' to use current directory).
@@ -32,5 +32,11 @@ RemoveText.py will remove all non-numeric characters in the excel file and conve
 DateCleaning.py will standardize date formats in the excel file to 'YYYY年X月X日' format.
 1. Enter the name of the target excel file.
 2. Enter the column indices where you wish to standardize dates (e.g., 1,2 for columns A and B).
+3. Enter the directory of the file you wish to save at (or enter '0' to use current directory).
+4. Enter the name of the new excel file.
+
+TimeCleaning.py will standardize time formats in the excel file to 'HH:MM' format in 24-hour time.
+1. Enter the name of the target excel file.
+2. Enter the column indices where you wish to standardize times (e.g., 1,2 for columns A and B).
 3. Enter the directory of the file you wish to save at (or enter '0' to use current directory).
 4. Enter the name of the new excel file.
