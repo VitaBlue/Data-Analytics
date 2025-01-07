@@ -47,15 +47,29 @@ def convert_simplified_to_traditional(input_file, output_file):
     cc = OpenCC('s2t')
     wb = openpyxl.load_workbook(input_file)
     
+    special_changes = 0
     for sheet in wb.sheetnames:
         ws = wb[sheet]
         for row in ws.iter_rows():
             for cell in row:
                 if isinstance(cell.value, str):
-                    cell.value = cc.convert(cell.value)
+                    # 先進行一般的繁簡轉換
+                    converted_text = cc.convert(cell.value)
+                    
+                    # 特殊處理：將「餅幹」轉換為「餅乾」
+                    if '餅幹' in converted_text:
+                        original = converted_text
+                        converted_text = converted_text.replace('餅幹', '餅乾')
+                        if original != converted_text:
+                            special_changes += 1
+                    
+                    cell.value = converted_text
     
     wb.save(output_file)
-    print("Chinese conversion completed.")
+    if special_changes > 0:
+        print(f"Chinese conversion completed. Special conversion ('餅幹' -> '餅乾'): {special_changes} changes")
+    else:
+        print("Chinese conversion completed.")
     return output_file
 
 def process_text_column(ws, col):
