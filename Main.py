@@ -27,6 +27,21 @@ def get_output_file_details(default_directory):
     
     return full_output_path
 
+def get_column_headers(file_path):
+    """Get the headers (first row) of the Excel file."""
+    wb = openpyxl.load_workbook(file_path)
+    ws = wb.active
+    
+    max_col = ws.max_column
+    headers = []
+    
+    for col in range(1, max_col + 1):
+        cell_value = ws.cell(row=1, column=col).value
+        headers.append(cell_value if cell_value is not None else "")
+        
+    wb.close()
+    return headers
+
 def convert_simplified_to_traditional(input_file, output_file):
     """Convert Simplified Chinese text in an Excel file to Traditional Chinese."""
     cc = OpenCC('s2t')
@@ -43,24 +58,21 @@ def convert_simplified_to_traditional(input_file, output_file):
     print("Chinese conversion completed.")
     return output_file
 
-def get_column_headers(file_path):
-    """Get the headers (first row) of the Excel file."""
-    wb = openpyxl.load_workbook(file_path)
-    ws = wb.active
-    headers = []
-    for cell in ws[1]:
-        headers.append(cell.value if cell.value is not None else "")
-    return headers
-
 def process_text_column(ws, col):
     """Process text column - Remove spaces"""
+    changes = 0
     for row in range(2, ws.max_row + 1):
         cell = ws.cell(row=row, column=col)
         if isinstance(cell.value, str):
-            cell.value = ''.join(cell.value.split())
+            cleaned_value = ''.join(cell.value.split())
+            if cell.value != cleaned_value:
+                cell.value = cleaned_value
+                changes += 1
+    return changes
 
 def process_date_column(ws, col):
     """Process date column - Remove spaces and format date"""
+    changes = 0
     for row in range(2, ws.max_row + 1):
         cell = ws.cell(row=row, column=col)
         if isinstance(cell.value, str):
@@ -84,13 +96,17 @@ def process_date_column(ws, col):
                     formatted_date = f"{year}年{month}月{day}日"
                     break
             
-            if formatted_date:
+            if formatted_date and cell.value != formatted_date:
                 cell.value = formatted_date
+                changes += 1
+    return changes
 
 def process_time_column(ws, col):
     """Process time column - Format time or replace with N/A"""
+    changes = 0
     for row in range(2, ws.max_row + 1):
         cell = ws.cell(row=row, column=col)
+        original_value = cell.value
         
         # Initialize cleaned_value
         cleaned_value = ""
@@ -105,44 +121,57 @@ def process_time_column(ws, col):
                 hours = int(match.group(1))
                 minutes = int(match.group(2))
                 if 0 <= hours <= 23 and 0 <= minutes <= 59:
-                    cell.value = f"{hours:02d}:{minutes:02d}"
+                    new_value = f"{hours:02d}:{minutes:02d}"
+                    if cell.value != new_value:
+                        cell.value = new_value
+                        changes += 1
                     continue
             
             # If no match, try to extract numbers
             cleaned_value = ''.join(filter(str.isdigit, time_str))
         
         # Format time if we have valid numeric data
+        new_value = "N/A"
         if cleaned_value:
             if len(cleaned_value) >= 4:
                 hours = int(cleaned_value[:2])
                 minutes = int(cleaned_value[2:4])
                 if 0 <= hours <= 23 and 0 <= minutes <= 59:
-                    cell.value = f"{hours:02d}:{minutes:02d}"
-                else:
-                    cell.value = "N/A"
-            elif len(cleaned_value) == 3:  # Handle cases like "8:18" -> "818"
+                    new_value = f"{hours:02d}:{minutes:02d}"
+            elif len(cleaned_value) == 3:
                 hours = int(cleaned_value[0])
                 minutes = int(cleaned_value[1:])
                 if 0 <= hours <= 23 and 0 <= minutes <= 59:
-                    cell.value = f"{hours:02d}:{minutes:02d}"
-                else:
-                    cell.value = "N/A"
-            else:
-                cell.value = "N/A"
-        else:
-            cell.value = "N/A"
+                    new_value = f"{hours:02d}:{minutes:02d}"
+        
+        if original_value != new_value:
+            cell.value = new_value
+            changes += 1
+            
+    return changes
 
 def process_number_column(ws, col):
     """Process number column - Remove text and spaces"""
+    changes = 0
     for row in range(2, ws.max_row + 1):
         cell = ws.cell(row=row, column=col)
         if isinstance(cell.value, str):
             # Keep only numeric characters
             cleaned_value = ''.join(filter(str.isdigit, cell.value))
-            cell.value = int(cleaned_value) if cleaned_value else None
+            new_value = int(cleaned_value) if cleaned_value else None
+            if cell.value != str(new_value):
+                cell.value = new_value
+                changes += 1
+    return changes
 
 def main():
     default_directory = os.getcwd()
+    
+    # Initialize counters for each type of cleaning
+    total_text_changes = 0
+    total_date_changes = 0
+    total_time_changes = 0
+    total_number_changes = 0
     
     # Step 1: Get input file and convert Chinese characters
     input_file = get_input_file(default_directory)
@@ -172,19 +201,36 @@ def main():
             
             if choice in ['1', '2', '3', '4', '5']:
                 if choice == '1':  # Text
-                    process_text_column(ws, col_num)
+                    changes = process_text_column(ws, col_num)
+                    print(f"Text cleaning: {changes} cells modified")
+                    total_text_changes += changes
                 elif choice == '2':  # Date
-                    #process_text_column(ws, col_num)
-                    process_date_column(ws, col_num)
+                    changes = process_date_column(ws, col_num)
+                    print(f"Date cleaning: {changes} cells modified")
+                    total_date_changes += changes
                 elif choice == '3':  # Time
-                    process_time_column(ws, col_num)
+                    changes = process_time_column(ws, col_num)
+                    print(f"Time cleaning: {changes} cells modified")
+                    total_time_changes += changes
                 elif choice == '4':  # Number
-                    process_number_column(ws, col_num)
-                    process_text_column(ws, col_num)
+                    changes1 = process_number_column(ws, col_num)
+                    changes2 = process_text_column(ws, col_num)
+                    print(f"Number cleaning: {changes1} cells modified")
+                    print(f"Additional text cleaning: {changes2} cells modified")
+                    total_number_changes += changes1
+                    total_text_changes += changes2
                 # Choice 5 (None) does nothing
                 break
             else:
                 print("Invalid choice. Please enter a number between 1 and 5.")
+    
+    # Print total changes before saving
+    print("\nTotal changes made:")
+    print(f"Text cleaning: {total_text_changes} cells modified")
+    print(f"Date cleaning: {total_date_changes} cells modified")
+    print(f"Time cleaning: {total_time_changes} cells modified")
+    print(f"Number cleaning: {total_number_changes} cells modified")
+    print(f"Total modifications: {total_text_changes + total_date_changes + total_time_changes + total_number_changes} cells")
     
     # Save final output
     final_output = get_output_file_details(default_directory)
