@@ -10,6 +10,12 @@ The output will be an Excel file containing the cleaned data.
 
 *MAKE SURE THE TERMINAL IS AT THE CORRECT DIRECTORY BEFORE YOU ENTER THE NAME OF THE TARGET EXCEL FILE*
 
+Main.py will clean the data with the functions mentioned below.
+1. Enter the name of the target excel file.
+2. Enter the the types of data for each column (1-5).
+3. Enter the directory of the file you wish to save at.
+4. Enter the name of the new excel file.
+
 ChineseCleaning.py will translate Simplifed Chinese text into Tranditional Chinese text in the excel file.
 1. Enter the name of the target excel file.
 2. Enter the column and/or rows that you wish to translate.
