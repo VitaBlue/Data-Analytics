@@ -30,18 +30,23 @@ def convert_simplified_to_traditional(input_file, output_file):
     """Convert Simplified Chinese text in an Excel file to Traditional Chinese."""
     cc = OpenCC('s2t')  # 's2t' stands for Simplified to Traditional
 
-    # Load the workbook and select the active worksheet
+    # Load the workbook
     wb = openpyxl.load_workbook(input_file)
-    ws = wb.active
 
-    # Iterate through all rows and columns in the sheet
-    for row in ws.iter_rows():
-        for cell in row:
-            if isinstance(cell.value, str):  # Check if the cell contains text
-                original_text = cell.value
-                # Convert Simplified Chinese to Traditional Chinese
-                converted_text = cc.convert(original_text)
-                cell.value = converted_text  # Update the cell value
+    # Iterate through all sheets in the workbook
+    for sheet in wb.sheetnames:
+        ws = wb[sheet]  # Select each worksheet
+
+        # Iterate through all rows and columns in the sheet
+        for row in ws.iter_rows():
+            for cell in row:
+                if isinstance(cell.value, str):  # Check if the cell contains text
+                    original_text = cell.value
+                    # Convert Simplified Chinese to Traditional Chinese
+                    converted_text = cc.convert(original_text)
+                    cell.value = converted_text  # Update the cell value
+
+        print(f"Converted data in sheet: {sheet}")
 
     # Save the changes to a new Excel file
     wb.save(output_file)
