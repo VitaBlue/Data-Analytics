@@ -77,7 +77,7 @@ end
 def select_from_list(input_text, matches)
   puts "\nOriginal product name: '#{input_text}'"
   puts "Please select the correct product name from the following options:"
-  puts "0. Keep original value (no change)"
+  puts "0. Keep orginal value (or add to product list)"
   matches.each_with_index do |(product, similarity), i|
     puts "#{i + 1}. #{product} (Similarity: #{(similarity * 100).round(1)}%)"
   end
@@ -88,8 +88,7 @@ def select_from_list(input_text, matches)
       choice = gets.chomp.to_i
       if (0..matches.length).include?(choice)
         if choice == 0
-          puts "Keeping original value: #{input_text}"
-          return nil
+          return :add_to_list
         else
           puts "Selected: #{matches[choice-1][0]}"
           return matches[choice-1][0]
@@ -121,20 +120,45 @@ def find_closest_match(input_text, product_list, threshold=0.6)
     return best_match if ask_for_confirmation(cleaned_text, best_match, similarity)
   end
   
-  select_from_list(cleaned_text, matches)
+  result = select_from_list(cleaned_text, matches)
+  return result == :add_to_list ? nil : result
 end
 
 def get_product_list_file(default_directory)
   loop do
-    print "Enter the name of the product list file (with .txt extension): "
+    print "Enter the name of the product list file (with .txt extension, or '0' to create new): "
     input_file = gets.chomp
+    
+    if input_file == '0'
+      print "Enter the name for new product list file (with .txt extension): "
+      new_file = gets.chomp
+      new_full_path = File.join(default_directory, new_file)
+      
+      begin
+        File.write(new_full_path, '')
+        puts "Created new empty product list file: #{new_full_path}"
+        puts "\nStarting matching process..."
+        return [new_full_path, []]
+      rescue StandardError => e
+        puts "Error creating file: #{e.message}"
+        next
+      end
+    end
+    
     full_path = File.join(default_directory, input_file)
+    
+    if !File.exist?(full_path)
+      puts "File '#{full_path}' not found. Please try again or enter '0' to create new."
+      next
+    end
+    
     begin
       products = File.readlines(full_path, encoding: 'UTF-8').map(&:strip).map { |line| line.gsub(/^"|"$/, '') }.reject(&:empty?)
-      puts "Warning: File is empty" if products.empty?
+      if products.empty?
+        puts "Warning: File is empty"
+        puts "\nStarting matching process..."
+      end
       return [full_path, products]
-    rescue Errno::ENOENT
-      puts "File '#{full_path}' not found. Please try again."
     rescue StandardError => e
       puts "Error reading file: #{e.message}"
     end
@@ -176,6 +200,7 @@ def handle_unmatched_items(unmatched_items, product_list_file)
   
   puts "\nProcessing unmatched items:"
   new_products = Set.new
+  skipped_items = Set.new
   
   unmatched_items.sort.each do |item|
     loop do
@@ -185,6 +210,9 @@ def handle_unmatched_items(unmatched_items, product_list_file)
         if response == 'Y'
           new_products.add(item)
           puts "Added \"#{item}\" to product list"
+        else
+          skipped_items.add(item)
+          puts "Skipped \"#{item}\""
         end
         break
       end
@@ -196,7 +224,13 @@ def handle_unmatched_items(unmatched_items, product_list_file)
     save_product_list(new_products, product_list_file)
     puts "\nUpdated product list saved to #{product_list_file}"
   end
+  
+  if !skipped_items.empty?
+    puts "\nItems not added to product list:"
+    skipped_items.sort.each { |item| puts "- #{item}" }
+  end
 end
+
 
 def clean_product_names(input_file, column_indices, output_file, product_list_file, product_list)
   workbook = Roo::Spreadsheet.open(input_file)
@@ -276,18 +310,35 @@ end
 def main
   default_directory = Dir.pwd
   
-  product_list_file, product_list = get_product_list_file(default_directory)
-  
-  if product_list.empty?
-    puts "Error: Product list is empty. Please check your input file"
-    return
+  begin
+    product_list_file, product_list = get_product_list_file(default_directory)
+    input_excel_file = get_input_file(default_directory)
+    columns_to_clean = get_columns_to_clean
+    output_excel_file = get_output_file_details(default_directory)
+    
+    if product_list.empty?
+      puts "\nNo matching items in product list yet. Items will be collected during the process."
+      puts "During matching, select '0' to add items to the product list."
+      print "\nPress Enter to start matching..."
+      gets
+    end
+    
+    loop do
+      clean_product_names(input_excel_file, columns_to_clean, output_excel_file, product_list_file, product_list)
+      
+      print "\nWould you like to process another file? (Y/N): "
+      break unless gets.chomp.upcase == 'Y'
+      
+      product_list = load_product_list(product_list_file)
+    end
+    
+  rescue StandardError => e
+    puts "\nAn error occurred: #{e.message}"
+    print "\nWould you like to try again? (Y/N): "
+    retry if gets.chomp.upcase == 'Y'
   end
   
-  input_excel_file = get_input_file(default_directory)
-  columns_to_clean = get_columns_to_clean
-  output_excel_file = get_output_file_details(default_directory)
-  
-  clean_product_names(input_excel_file, columns_to_clean, output_excel_file, product_list_file, product_list)
+  puts "\nProgram finished. Thank you for using!"
 end
 
 if __FILE__ == $0
