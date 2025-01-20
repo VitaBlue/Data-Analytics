@@ -77,7 +77,7 @@ end
 def select_from_list(input_text, matches)
   puts "\nOriginal product name: '#{input_text}'"
   puts "Please select the correct product name from the following options:"
-  puts "0. Keep orginal value (or add to product list)"
+  puts "0. Keep original value (or add to product list)"
   matches.each_with_index do |(product, similarity), i|
     puts "#{i + 1}. #{product} (Similarity: #{(similarity * 100).round(1)}%)"
   end
