@@ -1,5 +1,6 @@
 import openpyxl
 import os
+from opencc import OpenCC
 
 def delete_sheet(workbook, sheet_name):
     """Delete a specific sheet from the workbook."""
@@ -33,6 +34,22 @@ def delete_rows(workbook, sheet_name, start_row, end_row):
     else:
         print(f"Sheet '{sheet_name}' does not exist.")
 
+def translate_simplified_to_traditional(workbook, sheet_name):
+    """Translate all Simplified Chinese text to Traditional Chinese in the specified sheet."""
+    if sheet_name in workbook.sheetnames:
+        cc = OpenCC('s2t')  # Initialize OpenCC for Simplified to Traditional conversion
+        sheet = workbook[sheet_name]
+
+        for row in sheet.iter_rows():
+            for cell in row:
+                if isinstance(cell.value, str):  # Check if the cell value is a string
+                    original_text = cell.value
+                    translated_text = cc.convert(original_text)  # Convert text
+                    cell.value = translated_text  # Update cell value
+                    print(f"Translated '{original_text}' to '{translated_text}' in cell {cell.coordinate}.")
+    else:
+        print(f"Sheet '{sheet_name}' does not exist.")
+
 def save_workbook(workbook, output_file):
     """Save the workbook to the specified output file."""
     workbook.save(output_file)
@@ -43,8 +60,9 @@ def display_menu():
     print("\nMenu:")
     print("1. Delete a sheet")
     print("2. Delete rows")
-    print("3. Save file and exit")
-    print("Please select an option (1-3): ")
+    print("3. Translate Simplified Chinese to Traditional Chinese")
+    print("4. Save file and exit")
+    print("Please select an option (1-4): ")
 
 def main():
     # Load the input Excel file
@@ -76,13 +94,18 @@ def main():
                 print("Invalid row range format. Please enter in 'start-end' format.")
 
         elif choice == '3':
+            # Translate Simplified Chinese to Traditional Chinese
+            sheet_name = input("Enter the name of the sheet to translate: ")
+            translate_simplified_to_traditional(workbook, sheet_name)
+
+        elif choice == '4':
             # Save and exit
             output_file = input("Enter the name of the output file (with .xlsx extension): ")
             save_workbook(workbook, output_file)
             break  # Exit the loop
 
         else:
-            print("Invalid option. Please choose between 1 and 3.")
+            print("Invalid option. Please choose between 1 and 4.")
 
 if __name__ == "__main__":
     main()
