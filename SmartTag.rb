@@ -30,14 +30,14 @@ def read_existing_classifications(filename = 'classifications.txt')
   classifications
 end
 
-# Function to classify multiple products
+# Function to classify multiple products with dynamic classifications
 def classify_products(client, product_names)
   # Ensure all product names are in UTF-8 encoding
   product_names.map! { |name| name.encode('UTF-8', invalid: :replace, undef: :replace, replace: '') }
 
   messages = [{
     role: 'user',
-    content: "Please classify these products as JSON with one of these values: 'Beverage', 'Food', or 'Other'. The products are: #{product_names.join(', ')}. Respond only with a valid JSON object like this: {\"classifications\": {\"product_name\": \"classification\"}}."
+    content: "Please classify these products. The products are: #{product_names.join(', ')}. Respond only with a valid JSON object like this: {\"classifications\": {\"product_name\": \"classification\"}}."
   }]
   
   begin
@@ -131,7 +131,7 @@ def classify_products_from_excel(client)
     return
   end
   
-  # Classify all unique product names using AI and save results to file
+  # Classify all unique product names using AI and save results to file with dynamic classifications.
   classifications = classify_products(client, new_product_names)
 
   if classifications.is_a?(Hash)
@@ -204,8 +204,8 @@ loop do
    puts "0. Classify a single product"
    puts "1. Classify products from an Excel file"
    puts "2. List all products and their classifications from an Excel file"
-   puts "3. List all classified products and their respective classifications" # New option added here.
-   puts "4. Delete all classifications" # Moved delete option here.
+   puts "3. List all classified products and their respective classifications"
+   puts "4. Delete all classifications"
    puts "5. Exit"
 
    print "Choose an option (0/1/2/3/4/5): "
@@ -225,10 +225,12 @@ loop do
          next 
        end
         
-       classification = classify_product(client, product_name)
+       classification = classify_products(client, [product_name]) # Use dynamic classification here
         
-       if ["Beverage", "Food", "Other"].include?(classification)
-         save_to_file(product_name, classification)
+       if classification.is_a?(Hash) && classification.key?(product_name)
+         save_to_file(product_name, classification[product_name])
+       else 
+         puts "Error classifying product."
        end
         
      when '1'
